@@ -406,8 +406,10 @@ absl::StatusOr<ExecutorVisionData> VisionLiteRtCompiledModelExecutor::Encode(
     } else if (tensor_type.ElementType() == ElementType::Int32) {
       // Initialize the position buffer to -1 since the input image tensor
       // might have different size as the encoder input tensor.
+      LITERT_ASSIGN_OR_RETURN(auto encoder_tensor_type,
+                              input_buffers[input_index].TensorType());
       LITERT_ASSIGN_OR_RETURN(auto position_num_elements,
-                              tensor_type.Layout().NumElements());
+                              encoder_tensor_type.Layout().NumElements());
       std::vector<int32_t> encoder_input_positions(position_num_elements, -1);
       LITERT_RETURN_IF_ERROR(
           input_buffers[input_index].Write<int32_t>(encoder_input_positions));
@@ -420,10 +422,17 @@ absl::StatusOr<ExecutorVisionData> VisionLiteRtCompiledModelExecutor::Encode(
     }
   }
 
-  LITERT_ASSIGN_OR_RETURN(
-      auto encoder_output_buffers,
-      vision_encoder_->GetCompiledModel().CreateOutputBuffers(
-          /*signature_index=*/0));
+  auto& encoder_output_buffers = vision_encoder_->GetMutableOutputBuffers();
+  if (encoder_output_buffers[0].IsWebGpuMemory() ||
+      encoder_output_buffers[0].IsMetalMemory()) {
+    // For WebGPU and Metal memory, we need to create a new output buffer to
+    // hold the data, otherwise we will get failed to lock TensorBuffer error on
+    // the second call to `Encode`. See b/457483190
+    LITERT_ASSIGN_OR_RETURN(
+        encoder_output_buffers,
+        vision_encoder_->GetCompiledModel().CreateOutputBuffers(
+            /*signature_index=*/0));
+  }
   LITERT_RETURN_IF_ERROR(vision_encoder_->GetCompiledModel().Run(
       input_buffers, encoder_output_buffers));
 
