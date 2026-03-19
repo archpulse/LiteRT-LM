@@ -443,6 +443,7 @@ NB_MODULE(litert_lm_ext, module) {
                                           : mapping.at(LogSeverity::kSilent);
 
         absl::SetMinLogLevel(severity_mapping.absl_severity);
+        absl::SetStderrThreshold(severity_mapping.absl_severity);
         LiteRtSetMinLoggerSeverity(LiteRtGetDefaultLogger(),
                                    severity_mapping.litert_severity);
         tflite::logging_internal::MinimalLogger::SetMinimumLogSeverity(
