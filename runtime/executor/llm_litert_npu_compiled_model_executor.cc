@@ -1470,10 +1470,9 @@ LlmLiteRtNpuCompiledModelExecutor::Create(
 
   // For the lack of a better way to identify the model variants, we use the
   // presence of per-layer embeddings as the signal for Gemma3n.
-  LITERT_ASSIGN_OR_RETURN(bool has_per_layer_embeddings,
+  LITERT_ASSIGN_OR_RETURN(const bool has_per_layer_embeddings,
                           HasPerLayerEmbedder(*llm_model));
-  const bool model_has_per_layer_embedding = has_per_layer_embeddings;
-  if (model_has_per_layer_embedding) {
+  if (has_per_layer_embeddings) {
     return CreateForModelHasPerLayerEmbedding(executor_settings, resources, env,
                                               llm_model);
   } else {
