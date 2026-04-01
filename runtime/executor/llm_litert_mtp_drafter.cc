@@ -163,22 +163,6 @@ LlmLiteRtMtpDrafter::Create(Environment& env, ModelResources& resources,
                             CompiledModel base_model,
                             EmbeddingLookupManager& embedding_manager,
                             EmbeddingLookupManager& ple_manager) {
-  std::optional<std::string> backend_constraint =
-      resources.GetTFLiteModelBackendConstraint(ModelType::kTfLiteMtpDrafter);
-  if (backend_constraint.has_value()) {
-    if (absl::EqualsIgnoreCase(backend_constraint.value(), "cpu")) {
-      if (executor_settings.GetBackend() != Backend::CPU) {
-        return absl::InvalidArgumentError(
-            "Backend constraint for MTP drafter is CPU, but executor backend "
-            "is not CPU.");
-      }
-    } else {
-      return absl::InvalidArgumentError(
-          absl::StrCat("Backend constraint ", backend_constraint.value(),
-                       " for MTP drafter is not supported."));
-    }
-  }
-
   ActivationDataType activation_data_type =
       executor_settings.GetActivationDataType().value_or(
           ActivationDataType::FLOAT16);
