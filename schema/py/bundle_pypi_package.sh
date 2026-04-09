@@ -29,8 +29,8 @@ echo "Workspace Root: ${WORKSPACE_ROOT}"
 STAGING_DIR="/tmp/litertlm_builder"
 
 echo "Building Proto and FlatBuffer bindings..."
-bazel build //runtime/proto:all
-bazel build //schema/core:litertlm_header_schema_py
+bazel build ${BAZEL_OPTS} //runtime/proto:all
+bazel build ${BAZEL_OPTS} //schema/core:litertlm_header_schema_py
 
 # Create a temporary staging directory
 echo "Setting up staging directory: ${STAGING_DIR}"
